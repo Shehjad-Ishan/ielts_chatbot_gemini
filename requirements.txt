@@ -1,0 +1,7 @@
+Flask==2.1.2
+requests==2.27.1
+gtts==2.2.3
+psutil==5.9.0
+google-genai==0.1.0
+deepmultilingualpunctuation==0.1.6
+waitress==2.1.2

@@ -1,0 +1,4 @@
+.pagekite.py
+*.pcl
+ __pycache__/
+ whisper.cpp

@@ -1,0 +1,52 @@
+2025-03-30 17:16:04,319 - INFO - App initialized for 100 users with settings: {'threads': 20, 'connections': 120, 'model_instances': 1, 'memory_threshold': 88.5, 'request_cooldown': 0.2}
+2025-03-30 17:16:04,335 - INFO - App initialized for 100 users with settings: {'threads': 20, 'connections': 120, 'model_instances': 1, 'memory_threshold': 88.5, 'request_cooldown': 0.2}
+2025-03-30 17:16:04,366 - INFO - Serving on http://0.0.0.0:80
+2025-03-30 17:16:33,284 - ERROR - Text processing error: 'SpeechHandler' object has no attribute 'punctuation_model'
+2025-03-30 17:16:34,329 - INFO - Initializing Gemini model instance 0: gemini-2.0-pro-exp-02-05
+2025-03-30 17:16:34,329 - INFO - AFC is enabled with max remote calls: 10.
+2025-03-30 17:16:39,622 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro-exp-02-05:generateContent "HTTP/1.1 200 OK"
+2025-03-30 17:16:39,622 - INFO - AFC remote call 1 is done.
+2025-03-30 17:16:39,622 - INFO - Gemini model instance 0 initialized successfully!
+2025-03-30 17:16:39,622 - INFO - Gemini model instance 0 initialized with model: gemini-2.0-pro-exp-02-05
+2025-03-30 17:16:39,622 - INFO - Initialized model load balancer with 1 instances
+2025-03-30 17:16:39,622 - INFO - AFC is enabled with max remote calls: 10.
+2025-03-30 17:16:42,306 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro-exp-02-05:generateContent "HTTP/1.1 200 OK"
+2025-03-30 17:16:42,306 - INFO - AFC remote call 1 is done.
+2025-03-30 17:19:21,645 - INFO - App initialized for 100 users with settings: {'threads': 20, 'connections': 120, 'model_instances': 1, 'memory_threshold': 88.5, 'request_cooldown': 0.2}
+2025-03-30 17:19:21,661 - INFO - App initialized for 100 users with settings: {'threads': 20, 'connections': 120, 'model_instances': 1, 'memory_threshold': 88.5, 'request_cooldown': 0.2}
+2025-03-30 17:19:21,661 - INFO - Serving on http://0.0.0.0:80
+2025-03-30 17:19:34,832 - ERROR - Text processing error: name 'PunctuationModel' is not defined
+2025-03-30 17:19:36,035 - INFO - Initializing Gemini model instance 0: gemini-2.0-pro-exp-02-05
+2025-03-30 17:19:36,035 - INFO - AFC is enabled with max remote calls: 10.
+2025-03-30 17:19:44,855 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro-exp-02-05:generateContent "HTTP/1.1 200 OK"
+2025-03-30 17:19:44,855 - INFO - AFC remote call 1 is done.
+2025-03-30 17:19:44,868 - INFO - Gemini model instance 0 initialized successfully!
+2025-03-30 17:19:44,868 - INFO - Gemini model instance 0 initialized with model: gemini-2.0-pro-exp-02-05
+2025-03-30 17:19:44,869 - INFO - Initialized model load balancer with 1 instances
+2025-03-30 17:19:44,869 - INFO - AFC is enabled with max remote calls: 10.
+2025-03-30 17:19:48,033 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro-exp-02-05:generateContent "HTTP/1.1 200 OK"
+2025-03-30 17:19:48,033 - INFO - AFC remote call 1 is done.
+2025-03-30 17:25:32,806 - INFO - App initialized for 100 users with settings: {'threads': 20, 'connections': 120, 'model_instances': 1, 'memory_threshold': 88.5, 'request_cooldown': 0.2}
+2025-03-30 17:25:32,806 - INFO - App initialized for 100 users with settings: {'threads': 20, 'connections': 120, 'model_instances': 1, 'memory_threshold': 88.5, 'request_cooldown': 0.2}
+2025-03-30 17:25:32,821 - INFO - Serving on http://0.0.0.0:80
+2025-03-30 17:25:53,231 - WARNING - From C:\Users\shehj\anaconda3\Lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-03-30 17:26:00,697 - INFO - Initializing Gemini model instance 0: gemini-2.0-pro-exp-02-05
+2025-03-30 17:26:00,697 - INFO - AFC is enabled with max remote calls: 10.
+2025-03-30 17:26:09,235 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro-exp-02-05:generateContent "HTTP/1.1 200 OK"
+2025-03-30 17:26:09,235 - INFO - AFC remote call 1 is done.
+2025-03-30 17:26:09,251 - INFO - Gemini model instance 0 initialized successfully!
+2025-03-30 17:26:09,251 - INFO - Gemini model instance 0 initialized with model: gemini-2.0-pro-exp-02-05
+2025-03-30 17:26:09,251 - INFO - Initialized model load balancer with 1 instances
+2025-03-30 17:26:09,251 - INFO - AFC is enabled with max remote calls: 10.
+2025-03-30 17:26:11,234 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro-exp-02-05:generateContent "HTTP/1.1 200 OK"
+2025-03-30 17:26:11,234 - INFO - AFC remote call 1 is done.
+2025-03-30 17:26:26,840 - INFO - AFC is enabled with max remote calls: 10.
+2025-03-30 17:26:29,610 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro-exp-02-05:generateContent "HTTP/1.1 200 OK"
+2025-03-30 17:26:29,610 - INFO - AFC remote call 1 is done.
+2025-03-30 17:26:48,273 - INFO - AFC is enabled with max remote calls: 10.
+2025-03-30 17:26:51,529 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro-exp-02-05:generateContent "HTTP/1.1 200 OK"
+2025-03-30 17:26:51,529 - INFO - AFC remote call 1 is done.
+2025-03-30 17:27:07,634 - INFO - AFC is enabled with max remote calls: 10.
+2025-03-30 17:27:09,627 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro-exp-02-05:generateContent "HTTP/1.1 200 OK"
+2025-03-30 17:27:09,633 - INFO - AFC remote call 1 is done.

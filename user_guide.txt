@@ -1,0 +1,76 @@
+# Auto-scaling IELTS Application
+
+This application is designed to automatically scale based on the expected number of users.
+
+## Setup
+
+1. Make sure all required packages are installed:
+```
+pip install flask requests gtts psutil google-generativeai waitress
+```
+
+2. Ensure you have a valid Google API key for Gemini in the `config.json` file.
+
+## Running the Application
+
+### Method 1: Command Line Configuration
+
+You can specify the expected number of users directly when starting the application:
+
+```bash
+python wsgi.py 1000
+```
+
+This will configure the application for 1,000 users.
+
+### Method 2: API Configuration
+
+You can configure the application at runtime using the API:
+
+```bash
+curl -X POST http://localhost/api/configure \
+  -H "Content-Type: application/json" \
+  -d '{"expected_users": 1000}'
+```
+
+### Method 3: Edit Config File
+
+You can directly edit the `config.json` file and restart the application:
+
+```json
+{
+    "expected_users": 1000,
+    "thread_multiplier": 0.2,
+    "connection_multiplier": 1.2,
+    "memory_threshold": 85,
+    "request_cooldown": 0.2,
+    "model_name": "gemini-2.0-pro-exp-02-05",
+    "api_key": "YOUR_API_KEY"
+}
+```
+
+## Monitoring
+
+Check the current application status:
+
+```bash
+curl http://localhost/api/status
+```
+
+Monitor memory usage:
+
+```bash
+curl http://localhost/api/memory
+```
+
+## How Auto-scaling Works
+
+The application dynamically adjusts several parameters based on the expected user count:
+
+1. **Threads**: Scales based on user count and available CPU cores
+2. **Connection Limit**: Scales based on user count
+3. **Model Instances**: Creates multiple model instances for load balancing
+4. **Memory Threshold**: Adjusts garbage collection threshold based on load
+5. **Request Cooldown**: Reduces wait time between API calls for higher user counts
+
+The application uses a round-robin load balancer to distribute requests across multiple model instances.
