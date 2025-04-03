@@ -8,13 +8,23 @@ let config = {
     currentTestPart: 1,
     testActive: false,
     timerInterval: null,
+    interimTranscript: '',
+    finalTranscript: '',
+    recognitionResults: [],
     timerSeconds: 0,
     lastTimerValue: 0,
+    recordingActive: false,
+    hasSpeechDetected: false,
+    recordingStartTime: 0,
+    lastSpeechTimestamp: 0,
+    tempMessageElement: null,
+    fullTranscript: '',
+    manualStop:false,
     recognition: null,
     currentAudio: null,  // Track current playing audio
     messageSent: false,  // Flag to track if a message has been sent
     testPrompts: {
-        systemPrompt: `You are an IELTS speaking examiner. You should evaluate the student's English speaking ability 
+        systemPrompt: `You are an IELTS speaking examiner. Your name is Aditi. You should evaluate the student's English speaking ability 
                       according to the IELTS criteria: Fluency and Coherence, Lexical Resource, Grammatical Range 
                       and Accuracy, and Pronunciation. Keep your responses concise and natural like a real examiner. 
                       Do not provide scores during the test, only at the end when explicitly asked.`,
@@ -26,7 +36,7 @@ let config = {
                       
                       Provide a score out of 9 for each category and an overall band score, with detailed feedback.`,
         part1: {
-            intro: "Good morning/afternoon. My name is Aditi. Can you tell me your full name, please? Now, I'd like to ask you some questions about yourself.",
+            intro: "Good morning. My name is Aditi. Can you tell me your full name, please? Now, I'd like to ask you some questions about yourself.",
             topics: [
                 "Can you describe your hometown?",
                 "Do you work or are you a student?",
@@ -122,182 +132,214 @@ async function processPunctuation(text) {
 }
 
 // Initialize Speech Recognition
+// Initialize Speech Recognition
+// Initialize Speech Recognition
+let autoRestartTimeout = null;
 function initializeSpeechRecognition() {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         config.recognition = new SpeechRecognition();
-        config.recognition.continuous = true;
+        config.recognition.continuous = false; // Set to false for all platforms
         config.recognition.interimResults = true;
         config.recognition.lang = 'en-IN';
         
-        let hasSpeechDetected = false;
-        let silenceTimer = null;
-        const SILENCE_THRESHOLD = 60000; // 1 minute silence threshold
-        let recordingStartTime = 0;
-        let lastSpeechTimestamp = 0;
-        let tempMessageElement = null;
-        let fullTranscript = '';
+        // Set up shared state in config
+        config.recordingActive = false;
+        config.hasSpeechDetected = false;
+        config.recordingStartTime = 0;
+        config.lastSpeechTimestamp = 0;
+        config.tempMessageElement = null;
+        config.fullTranscript = '';
+        config.manualStop = false;
         
         config.recognition.onstart = () => {
             updateStatus('Listening... Speak now.');
-            hasSpeechDetected = false;
-            recordingStartTime = Date.now();
-            lastSpeechTimestamp = recordingStartTime;
-            config.pauseCount = 0;
-            config.lastTimerValue = config.timerSeconds;
-            fullTranscript = '';
-            config.messageSent = false;
+            
+            if (!config.recordingActive) {
+                config.recordingActive = true;
+                config.recordingStartTime = Date.now();
+                config.pauseCount = 0;
+                config.lastTimerValue = config.timerSeconds;
+                config.fullTranscript = '';
+                config.messageSent = false;
+                
+                config.tempMessageElement = document.createElement('div');
+                config.tempMessageElement.classList.add('message', 'user', 'temp-message');
+                config.tempMessageElement.textContent = '...';
+                chatContainer.appendChild(config.tempMessageElement);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
             
             startRecordingButton.disabled = true;
             stopRecordingButton.disabled = false;
+        };
+
+        config.recognition.onresult = async (event) => {
+            // Get the latest result only
+            const latestResult = event.results[event.results.length - 1];
             
-            tempMessageElement = document.createElement('div');
-            tempMessageElement.classList.add('message', 'user', 'temp-message');
-            tempMessageElement.textContent = '...';
-            chatContainer.appendChild(tempMessageElement);
+            // If it's a final result, add to full transcript
+            if (latestResult.isFinal) {
+                const transcript = latestResult[0].transcript.trim() + ' ';
+                config.fullTranscript += transcript;
+                config.hasSpeechDetected = true;
+            } else {
+                // Show interim result in UI but don't add to final transcript yet
+                const interimText = config.fullTranscript + latestResult[0].transcript.trim();
+                if (config.tempMessageElement) {
+                    config.tempMessageElement.textContent = interimText;
+                }
+                userInput.value = interimText;
+            }
+            
             chatContainer.scrollTop = chatContainer.scrollHeight;
-        };
-
-        config.recognition.onresult = async (event) => {
-            fullTranscript = '';
-            
-            for (let i = 0; i < event.results.length; i++) {
-                if (event.results[i].isFinal) {
-                    const transcript = event.results[i][0].transcript + ' ';
-                    const punctuatedText = await processPunctuation(transcript);
-                    fullTranscript += punctuatedText;
-                } else {
-                    fullTranscript += event.results[i][0].transcript + ' ';
-                }
-            }
-            
-            fullTranscript = fullTranscript.trim();
-            userInput.value = fullTranscript;
-            
-            if (tempMessageElement) {
-                tempMessageElement.textContent = fullTranscript;
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }
-
-            const currentTime = Date.now();
-            if (!hasSpeechDetected) {
-                hasSpeechDetected = true;
-            } else if (currentTime - lastSpeechTimestamp > 1500) {
-                config.pauseCount++;
-            }
-            lastSpeechTimestamp = currentTime;
-
-            if (silenceTimer) {
-                clearTimeout(silenceTimer);
-            }
-
-            silenceTimer = setTimeout(async () => {
-                if (hasSpeechDetected && !config.messageSent) {
-                    const punctuatedTranscript = await processPunctuation(fullTranscript);
-                    
-                    if (tempMessageElement) {
-                        tempMessageElement.remove();
-                        tempMessageElement = null;
-                    }
-                    config.messageSent = true;
-                    stopRecording();
-                    
-                    userInput.value = punctuatedTranscript;
-                    sendMessage();
-                    setTimeout(() => {
-                        collectSpeechMetadata(punctuatedTranscript, recordingStartTime);
-                    }, 0);
-                }
-            }, SILENCE_THRESHOLD);
-        };
-
-        config.recognition.onresult = async (event) => {
-            fullTranscript = '';
-            
-            // Just collect the transcript without punctuation during recording
-            for (let i = 0; i < event.results.length; i++) {
-                fullTranscript += event.results[i][0].transcript + ' ';
-            }
-            
-            fullTranscript = fullTranscript.trim();
-            userInput.value = fullTranscript;
-            
-            if (tempMessageElement) {
-                tempMessageElement.textContent = fullTranscript;
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }
-        
-            const currentTime = Date.now();
-            if (!hasSpeechDetected) {
-                hasSpeechDetected = true;
-            } else if (currentTime - lastSpeechTimestamp > 1500) {
-                config.pauseCount++;
-            }
-            lastSpeechTimestamp = currentTime;
+            config.lastSpeechTimestamp = Date.now();
         };
         
         config.recognition.onend = async () => {
-            startRecordingButton.disabled = false;
-            stopRecordingButton.disabled = true;
-            updateStatus('Recording stopped.');
-            
-            if (silenceTimer) {
-                clearTimeout(silenceTimer);
-            }
-            
-            if (hasSpeechDetected && fullTranscript.trim() !== '' && !config.messageSent) {
-                // Only process punctuation once at the end of recording
-                const punctuatedTranscript = await processPunctuation(fullTranscript);
-                
-                if (tempMessageElement) {
-                    tempMessageElement.remove();
-                    tempMessageElement = null;
+            // If we manually stopped, clean up and don't restart
+            if (config.manualStop) {
+                if (config.hasSpeechDetected && config.fullTranscript.trim() !== '' && !config.messageSent) {
+                    const punctuatedTranscript = await processPunctuation(config.fullTranscript);
+                    config.messageSent = true;
+                    userInput.value = punctuatedTranscript;
+                    
+                    if (config.tempMessageElement) {
+                        config.tempMessageElement.remove();
+                        config.tempMessageElement = null;
+                    }
+                    
+                    sendMessage();
+                    setTimeout(() => {
+                        collectSpeechMetadata(punctuatedTranscript, config.recordingStartTime);
+                    }, 0);
+                } else {
+                    if (config.tempMessageElement) {
+                        config.tempMessageElement.remove();
+                        config.tempMessageElement = null;
+                    }
                 }
                 
-                config.messageSent = true;
-                userInput.value = punctuatedTranscript;
-                sendMessage();
-                setTimeout(() => {
-                    collectSpeechMetadata(punctuatedTranscript, recordingStartTime);
-                }, 0);
-            } else {
-                if (tempMessageElement) {
-                    tempMessageElement.remove();
-                    tempMessageElement = null;
+                // Reset the session completely
+                config.recordingActive = false;
+                config.hasSpeechDetected = false;
+                startRecordingButton.disabled = false;
+                stopRecordingButton.disabled = true;
+                updateStatus('Recording stopped.');
+                
+                // Clear any pending auto-restart
+                if (autoRestartTimeout) {
+                    clearTimeout(autoRestartTimeout);
+                    autoRestartTimeout = null;
                 }
+            } 
+            // Otherwise automatically restart after a short delay if recording is still active
+            else if (config.recordingActive && !config.messageSent) {
+                updateStatus('Processing...');
+                
+                // Clear any existing timeout
+                if (autoRestartTimeout) {
+                    clearTimeout(autoRestartTimeout);
+                }
+                
+                // Restart after a short delay
+                autoRestartTimeout = setTimeout(() => {
+                    // Double-check that we're still in recording mode and not manually stopped
+                    if (config.recordingActive && !config.manualStop && !config.messageSent) {
+                        try {
+                            config.recognition.start();
+                            updateStatus('Listening again...');
+                        } catch (error) {
+                            console.error('Error restarting recognition', error);
+                            cleanup();
+                            startRecordingButton.disabled = false;
+                            stopRecordingButton.disabled = true;
+                            updateStatus('Recording stopped due to error.');
+                        }
+                    }
+                }, 300); // Small delay to let the recognition system reset
             }
         };
 
         config.recognition.onerror = (event) => {
             console.error('Speech recognition error', event.error);
-            updateStatus('Error with speech recognition: ' + event.error);
             
-            if (tempMessageElement) {
-                tempMessageElement.remove();
-                tempMessageElement = null;
+            // Specific handling for no-speech error
+            if (event.error === 'no-speech') {
+                // If we already have some transcript and aren't manually stopped,
+                // just restart
+                if (config.fullTranscript.trim() !== '' && !config.manualStop) {
+                    updateStatus('Listening again...');
+                    try {
+                        config.recognition.start();
+                        return;
+                    } catch (e) {
+                        console.error('Failed to restart after no-speech error', e);
+                    }
+                }
             }
             
-            stopRecording();
+            updateStatus('Error with speech recognition: ' + event.error);
+            cleanup();
+            startRecordingButton.disabled = false;
+            stopRecordingButton.disabled = true;
         };
+        
+        // Helper function to clean up recognition session
+        function cleanup() {
+            if (config.tempMessageElement) {
+                config.tempMessageElement.remove();
+                config.tempMessageElement = null;
+            }
+            
+            if (autoRestartTimeout) {
+                clearTimeout(autoRestartTimeout);
+                autoRestartTimeout = null;
+            }
+            
+            config.recordingActive = false;
+            config.hasSpeechDetected = false;
+        }
     } else {
         updateStatus('Speech recognition is not supported in your browser.');
         startRecordingButton.disabled = true;
     }
 }
 
-
 function stopRecording() {
     if (config.recognition) {
         try {
+            config.manualStop = true; // Set manual stop flag to true
+            config.recordingActive = false; // Ensure recording stops
+            
+            // Clear any pending auto-restart immediately
+            if (autoRestartTimeout) {
+                clearTimeout(autoRestartTimeout);
+                autoRestartTimeout = null;
+            }
+            
             config.recognition.stop();
+            updateStatus('Stopping recording...');
         } catch (error) {
             console.error('Error stopping recognition', error);
             updateStatus('Error stopping speech recognition.');
-            
-            const tempMessage = document.querySelector('.temp-message');
-            if (tempMessage) {
-                tempMessage.remove();
+        }
+    }
+}
+
+function startRecording() {
+    if (config.recognition) {
+        try {
+            if (config.currentAudio) {
+                stopSpeaking();
             }
+            
+            userInput.value = '';
+            config.manualStop = false; // Reset the manual stop flag
+            config.recognition.start();
+        } catch (error) {
+            console.error('Error starting recognition', error);
+            updateStatus('Error starting speech recognition.');
         }
     }
 }
@@ -334,35 +376,40 @@ function collectSpeechMetadata(transcript, startTime) {
     }, 0);
 }
 
-function startRecording() {
-    if (config.recognition) {
-        try {
-            if (config.currentAudio) {
-                stopSpeaking();
-            }
+// function startRecording() {
+//     if (config.recognition) {
+//         try {
+//             if (config.currentAudio) {
+//                 stopSpeaking();
+//             }
             
-            userInput.value = '';
-            config.recognition.start();
-        } catch (error) {
-            console.error('Error starting recognition', error);
-            updateStatus('Error starting speech recognition.');
-        }
-    }
-}
+//             userInput.value = '';
+//             config.recognition.start();
+//         } catch (error) {
+//             console.error('Error starting recognition', error);
+//             updateStatus('Error starting speech recognition.');
+//         }
+//     }
+// }
 
 function stopSpeaking() {
     if (config.currentAudio) {
         config.currentAudio.pause();
         config.currentAudio.currentTime = 0;
         config.currentAudio = null;
-        
-        stopSpeakingButton.disabled = true;
-        updateStatus('Playback stopped.');
-        
-        startRecordingButton.disabled = false;
-        sendButton.disabled = false;
-        userInput.disabled = false;
     }
+
+    // Safely disable the stopSpeakingButton if it exists
+    if (typeof stopSpeakingButton !== 'undefined' && stopSpeakingButton) {
+        stopSpeakingButton.disabled = true;
+    }
+
+    updateStatus('Playback stopped.');
+
+    // Enable other UI elements if they exist
+    if (startRecordingButton) startRecordingButton.disabled = false;
+    if (sendButton) sendButton.disabled = false;
+    if (userInput) userInput.disabled = false;
 }
 
 async function sendMessage(isScoring = false, customPrompt = null) {
@@ -686,5 +733,140 @@ function attachEventListeners() {
         config.currentTestPart = parseInt(e.target.value);
     });
     
+    
     // saveSettingsButton.addEventListener('click', saveSettings);
 }
+
+async function saveNoticeboard() {
+    const noticeContent = document.getElementById('noticeboard').value.trim();
+    
+    if (!noticeContent) {
+        updateStatus('Noticeboard is empty. Nothing to save.');
+        return;
+    }
+    
+    try {
+        updateStatus('Saving noticeboard...');
+        
+        const response = await fetch('/api/save-notice', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                content: noticeContent
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        updateStatus(`Notice saved as ${data.filename}`);
+    } catch (error) {
+        console.error('Error saving notice:', error);
+        updateStatus(`Error saving notice: ${error.message}`);
+    }
+}
+
+// Rescrit access to source code
+
+// Add this code to your app.js file
+
+// Disable right-click
+// document.addEventListener('contextmenu', event => {
+//     event.preventDefault();
+//     return false;
+// }, true);
+
+// // Disable keyboard shortcuts for developer tools
+// document.addEventListener('keydown', function(event) {
+//     // Disable F12 key
+//     if(event.keyCode === 123) {
+//         event.preventDefault();
+//         return false;
+//     }
+    
+//     // Disable Ctrl+Shift+I / Cmd+Option+I
+//     if((event.ctrlKey && event.shiftKey && event.keyCode === 73) || 
+//        (event.metaKey && event.altKey && event.keyCode === 73)) {
+//         event.preventDefault();
+//         return false;
+//     }
+    
+//     // Disable Ctrl+Shift+J / Cmd+Option+J
+//     if((event.ctrlKey && event.shiftKey && event.keyCode === 74) || 
+//        (event.metaKey && event.altKey && event.keyCode === 74)) {
+//         event.preventDefault();
+//         return false;
+//     }
+    
+//     // Disable Ctrl+U / Cmd+U (View Source)
+//     if((event.ctrlKey && event.keyCode === 85) || 
+//        (event.metaKey && event.keyCode === 85)) {
+//         event.preventDefault();
+//         return false;
+//     }
+// });
+
+// // Disable browser DevTools using various techniques
+// (function() {
+//     // Detect DevTools opening
+//     const devtools = {
+//         isOpen: false,
+//         orientation: undefined
+//     };
+    
+//     const threshold = 160;
+    
+//     // Check for DevTools via window size
+//     const emitEvent = (isOpen, orientation) => {
+//         window.dispatchEvent(new CustomEvent('devtoolschange', {
+//             detail: {
+//                 isOpen,
+//                 orientation
+//             }
+//         }));
+//     };
+    
+//     setInterval(() => {
+//         const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+//         const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+//         const orientation = widthThreshold ? 'vertical' : 'horizontal';
+        
+//         if (
+//             !(heightThreshold && widthThreshold) &&
+//             ((window.Firebug && window.Firebug.chrome && window.Firebug.chrome.isInitialized) || widthThreshold || heightThreshold)
+//         ) {
+//             if (!devtools.isOpen || devtools.orientation !== orientation) {
+//                 emitEvent(true, orientation);
+//             }
+            
+//             devtools.isOpen = true;
+//             devtools.orientation = orientation;
+//         } else {
+//             if (devtools.isOpen) {
+//                 emitEvent(false, undefined);
+//             }
+            
+//             devtools.isOpen = false;
+//             devtools.orientation = undefined;
+//         }
+//     }, 500);
+    
+//     window.addEventListener('devtoolschange', function(e) {
+//         if (e.detail.isOpen) {
+//             // Optional: Redirect or show warning when DevTools is opened
+//             // document.body.innerHTML = 'Developer tools are not allowed on this site.';
+//             // Or you could redirect:
+//             // window.location = 'about:blank';
+//         }
+//     });
+// })();
+
+// // Add a warning message if copy functions are used
+// document.addEventListener('copy', function(e) {
+//     e.clipboardData.setData('text/plain', 'Copying content is disabled on this site.');
+//     e.preventDefault();
+// });

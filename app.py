@@ -21,6 +21,11 @@ from deepmultilingualpunctuation import PunctuationModel
 if not os.path.exists('logs'):
     os.makedirs('logs')
 
+# Ensure notices directory exists
+NOTICES_DIR = 'notices'
+if not os.path.exists(NOTICES_DIR):
+    os.makedirs(NOTICES_DIR)
+
 logging.basicConfig(
     handlers=[RotatingFileHandler('logs/app.log', maxBytes=10000000, backupCount=5)],
     level=logging.INFO,
@@ -468,6 +473,8 @@ def serve_static(path):
     if path == "" or not os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, 'index.html')
     return send_from_directory(app.static_folder, path)
+
+
 
 # Initialize app with default settings
 init_app()

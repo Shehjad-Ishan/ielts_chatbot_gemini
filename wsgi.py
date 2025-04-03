@@ -43,7 +43,7 @@ if __name__ == "__main__":
     
     serve(app, 
           host='0.0.0.0', 
-          port=80, 
+          port=8000, 
           threads=settings['threads'],
           connection_limit=settings['connections'],
           cleanup_interval=30,
