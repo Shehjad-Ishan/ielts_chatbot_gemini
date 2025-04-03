@@ -299,3 +299,6 @@
 2025-04-03 18:34:55,952 - INFO - AFC is enabled with max remote calls: 10.
 2025-04-03 18:35:00,048 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro-exp-02-05:generateContent "HTTP/1.1 200 OK"
 2025-04-03 18:35:00,048 - INFO - AFC remote call 1 is done.
+2025-04-03 21:24:03,683 - INFO - App initialized for 100 users with settings: {'threads': 20, 'connections': 120, 'model_instances': 1, 'memory_threshold': 88.5, 'request_cooldown': 0.2}
+2025-04-03 21:24:03,699 - INFO - App initialized for 100 users with settings: {'threads': 20, 'connections': 120, 'model_instances': 1, 'memory_threshold': 88.5, 'request_cooldown': 0.2}
+2025-04-03 21:24:03,715 - INFO - Serving on http://0.0.0.0:8000

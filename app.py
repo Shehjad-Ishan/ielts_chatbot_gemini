@@ -474,7 +474,29 @@ def serve_static(path):
         return send_from_directory(app.static_folder, 'index.html')
     return send_from_directory(app.static_folder, path)
 
+# Add these routes to your app.py file
 
+# Add this route to handle saving the notice content
+# Add this route to handle saving the notice content
+@app.route('/api/save-notice', methods=['POST'])
+def save_notice():
+    try:
+        data = request.json
+        content = data.get('content', '')
+        
+        if not content:
+            return jsonify({"error": "No content provided"}), 400
+        
+        filename = f"notice_{int(time.time())}.txt"
+        filepath = os.path.join(NOTICES_DIR, filename)
+        
+        with open(filepath, 'w') as f:
+            f.write(content)
+        
+        return jsonify({"message": "Notice saved successfully", "filename": filename})
+    except Exception as e:
+        logger.error(f"Save notice error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 # Initialize app with default settings
 init_app()

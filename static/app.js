@@ -733,12 +733,14 @@ function attachEventListeners() {
         config.currentTestPart = parseInt(e.target.value);
     });
     
-    
+    // Update the save button event listener
+    document.getElementById('saveNoticeBtn').addEventListener('click', saveNoticeContent);
     // saveSettingsButton.addEventListener('click', saveSettings);
 }
 
-async function saveNoticeboard() {
-    const noticeContent = document.getElementById('noticeboard').value.trim();
+// Add this function to handle saving the notice content
+async function saveNoticeContent() {
+    const noticeContent = document.getElementById('noticeText').value.trim();
     
     if (!noticeContent) {
         updateStatus('Noticeboard is empty. Nothing to save.');
@@ -769,6 +771,8 @@ async function saveNoticeboard() {
         updateStatus(`Error saving notice: ${error.message}`);
     }
 }
+
+
 
 // Rescrit access to source code
 
