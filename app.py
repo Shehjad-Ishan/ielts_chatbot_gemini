@@ -42,7 +42,7 @@ def load_config():
         "connection_multiplier": 1.2,  # Connections = users * multiplier
         "memory_threshold": 85,
         "request_cooldown": 0.2,
-        "model_name": "gemini-2.0-pro-exp-02-05",
+        "model_name": "gemma-3-27b-it",
         "api_key": "AIzaSyBla5K12NNIBKIv5We-PgrXyxsW_SuHqDw"
     }
     

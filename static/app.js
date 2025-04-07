@@ -24,7 +24,7 @@ let config = {
     currentAudio: null,  // Track current playing audio
     messageSent: false,  // Flag to track if a message has been sent
     testPrompts: {
-        systemPrompt: `You are an IELTS speaking examiner. Your name is Aditi. You should evaluate the student's English speaking ability 
+        systemPrompt: `You are an IELTS speaking examiner. Your name is Aditi Chopra. You should evaluate the student's English speaking ability 
                       according to the IELTS criteria: Fluency and Coherence, Lexical Resource, Grammatical Range 
                       and Accuracy, and Pronunciation. Keep your responses concise and natural like a real examiner. 
                       Do not provide scores during the test, only at the end when explicitly asked.`,
@@ -38,12 +38,14 @@ let config = {
         part1: {
             intro: "Good morning. My name is Aditi. Can you tell me your full name, please? Now, I'd like to ask you some questions about yourself.",
             topics: [
+                "Do you have a topic in mind?",
                 "Can you describe your hometown?",
                 "Do you work or are you a student?",
                 "What do you enjoy doing in your free time?",
                 "Do you prefer indoor or outdoor activities?",
                 "What kind of music do you like to listen to?",
                 "Do you enjoy cooking?"
+                
             ]
         },
         part2: {

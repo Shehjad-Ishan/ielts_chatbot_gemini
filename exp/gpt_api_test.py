@@ -9,7 +9,7 @@ def generate():
         api_key="AIzaSyBla5K12NNIBKIv5We-PgrXyxsW_SuHqDw",
     )
 
-    model = "gemini-2.0-pro-exp-02-05"
+    model = "gemma-3-27b-it"
     contents = [
         types.Content(
             role="user",
